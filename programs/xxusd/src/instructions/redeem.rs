@@ -19,7 +19,7 @@ pub struct Redeem<'info> {
     #[account(
         mut,
         seeds = [CONTROLLER_NAMESPACE],
-        bump = controller.bump,
+        bump,
         has_one = redeemable_mint @XxusdError::InvalidRedeemableMint
     )]
     pub controller: Box<Account<'info, Controller>>,
@@ -49,7 +49,7 @@ pub struct Redeem<'info> {
     #[account(
         mut,
         seeds = [b"kamino_depository"],
-        bump = kamino_depository.bump,
+        bump,
         has_one = controller @XxusdError::InvalidController,
         has_one = collateral_mint @XxusdError::InvalidCollateralMint,
     )]
@@ -95,7 +95,7 @@ pub fn handler(ctx: Context<Redeem>, redeemable_amount: Amount) -> Result<()> {
             },
             &[&[
                 b"kamino_depository",
-                &[ctx.accounts.kamino_depository.bump],
+                &[ctx.bumps.kamino_depository],
             ]],
         ),
         redeemable_amount.value(), // 假設 1:1 兌換，實際情況可能需要更複雜的計算

@@ -15,7 +15,7 @@ pub struct InitializeController<'info> {
     #[account(
         init,
         payer = authority,
-        space = Controller::LEN,
+        space = 8 + Controller::LEN,
         seeds = [CONTROLLER_NAMESPACE],
         bump
     )]
@@ -46,7 +46,7 @@ pub fn handler(
 
     let controller = &mut ctx.accounts.controller;
     controller.initialize(
-        *ctx.bumps.get("controller").unwrap(),
+        ctx.bumps.controller,
         ctx.accounts.authority.key(),
         ctx.accounts.redeemable_mint.key(),
         ctx.accounts.xxusd_mint.key(),

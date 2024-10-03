@@ -19,7 +19,7 @@ pub struct MintInstruction<'info> {
     #[account(
         mut,
         seeds = [CONTROLLER_NAMESPACE],
-        bump = controller.bump,
+        bump,
         has_one = redeemable_mint @XxusdError::InvalidRedeemableMint
     )]
     pub controller: Box<Account<'info, Controller>>,
@@ -49,7 +49,7 @@ pub struct MintInstruction<'info> {
     #[account(
         mut,
         seeds = [b"kamino_depository"],
-        bump = kamino_depository.bump,
+        bump,
         has_one = controller @XxusdError::InvalidController,
         has_one = collateral_mint @XxusdError::InvalidCollateralMint,
     )]
@@ -62,10 +62,6 @@ pub struct MintInstruction<'info> {
 }
 
 pub fn handler(ctx: Context<MintInstruction>, collateral_amount: Amount) -> Result<()> {
-    // 註解：這個函數處理 xxUSD 的鑄造邏輯
-    // 在 UXD 中，這裡使用了 credix_client 和 xxusd_cpi 來處理不同的存儲庫
-    // 在我們的 xxUSD 實現中，我們將直接處理 Kamino 存儲庫
-
     // 1. 驗證抵押品金額
     if collateral_amount.value() == 0 {
         return Err(XxusdError::InvalidCollateralAmount.into());
@@ -98,7 +94,7 @@ pub fn handler(ctx: Context<MintInstruction>, collateral_amount: Amount) -> Resu
             },
             &[&[
                 CONTROLLER_NAMESPACE,
-                &[ctx.accounts.controller.bump],
+                &[ctx.bumps.controller],
             ]],
         ),
         xxusd_amount.value(),

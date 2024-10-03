@@ -29,7 +29,7 @@ xxUSD/
 
 This is the main source directory for the xxUSD program.
 
-- `lib.rs`: The entry point of the program. It defines the program ID, imports necessary modules, and declares the program's instruction handlers.
+- `lib.rs`: The entry point of the program. It defines the program ID, imports necessary modules, and declares the program's instruction handlers. It also includes the `XxusdProgram` struct, which encapsulates the main program logic.
 
 ### programs/xxusd/src/core/
 
@@ -83,6 +83,8 @@ Contains utility functions used throughout the project.
 
 ## Key Functions
 
+The `XxusdProgram` struct in `lib.rs` encapsulates the following key functions:
+
 1. `initialize_controller`: Initializes the controller with the specified redeemable mint decimals.
 2. `mint`: Mints new xxUSD tokens in exchange for collateral.
 3. `redeem`: Redeems xxUSD tokens for collateral.
@@ -93,12 +95,26 @@ Contains utility functions used throughout the project.
 8. `freeze_program`: Freezes or unfreezes the program.
 9. `edit_controller`: Edits the controller, potentially changing its authority.
 
+## Key Constants
+
+The project defines several important constants in `lib.rs`:
+
+- `JUPSOL_MINT_PUBKEY`: Public key for the Jupiter SOL token (7eS55f4LP5xj4jqRp24uv5aPFak4gzue8jwb5949KDzP).
+- `USDC_MINT_PUBKEY`: Public key for the USDC token (EneKhgmdLQgfLtqC9aE52B1bMcFtjob6qMkDc5Q3mHx7).
+- `CONTROLLER_NAMESPACE`: Namespace for the controller.
+- `BPS_POWER`: Basis points power (10000).
+- `MAX_REDEEMABLE_GLOBAL_SUPPLY_CAP`: Maximum global supply cap for redeemable tokens.
+
+## Program ID
+
+The program ID is: `8ge5JzwZSYo8A3Qcrt2x9Zbug4umokMtZC6tMNBoFU9Z`
+
 ## Dependencies
 
 The project uses the following main dependencies:
 
-- anchor-lang = "0.28.0"
-- anchor-spl = "0.28.0"
+- anchor-lang = "0.29.0"
+- anchor-spl = "0.29.0"
 - solana-program = "1.16.0"
 - bytemuck = "1.13.1"
 
@@ -117,6 +133,14 @@ anchor test
 ```
 
 Note: Make sure you have the Solana toolchain and Anchor framework installed and properly configured before building or testing the project.
+
+## Error Handling
+
+The project includes a custom error handling mechanism. The `handle_error` function in `lib.rs` is used to convert `XxusdError` into `anchor_lang::error::Error` and log error messages.
+
+## Program Freezing
+
+The `validate_is_program_frozen` function in `lib.rs` checks if the program is frozen and returns an error if it is. This can be used to prevent certain operations when the program is in a frozen state.
 
 ## License
 

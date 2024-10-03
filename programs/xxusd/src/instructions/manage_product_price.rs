@@ -11,7 +11,7 @@ pub struct ManageProductPrice<'info> {
     #[account(
         mut,
         seeds = [b"controller"],
-        bump = controller.bump,
+        bump,
         has_one = authority,
     )]
     pub controller: Account<'info, Controller>,
@@ -51,7 +51,7 @@ pub fn get_product_price(ctx: Context<ManageProductPrice>, product_id: u64) -> R
         .iter()
         .find(|p| p.0 == product_id)
         .map(|p| p.1)
-        .ok_or_else(|| XxusdError::ProductNotFound.into())
+        .ok_or_else(|| error!(XxusdError::ProductNotFound))
 }
 
 #[event]

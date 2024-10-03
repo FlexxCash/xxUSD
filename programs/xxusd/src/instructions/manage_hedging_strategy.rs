@@ -14,7 +14,7 @@ pub struct ManageHedgingStrategy<'info> {
     #[account(
         mut,
         seeds = [b"controller"],
-        bump = controller.bump,
+        bump,
         has_one = authority,
     )]
     pub controller: Account<'info, Controller>,
@@ -22,7 +22,7 @@ pub struct ManageHedgingStrategy<'info> {
     #[account(
         mut,
         seeds = [b"hedging_strategy"],
-        bump = hedging_strategy.bump,
+        bump,
     )]
     pub hedging_strategy: Account<'info, HedgingStrategy>,
 
