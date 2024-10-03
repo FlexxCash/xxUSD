@@ -56,7 +56,7 @@ impl<'info> ReleaseXxusd<'info> {
     }
 }
 
-pub fn handler(ctx: Context<ReleaseXxusd>) -> Result<()> {
+pub fn handler(mut ctx: Context<ReleaseXxusd>) -> Result<()> {
     let current_time = i64_to_timestamp(Clock::get()?.unix_timestamp);
 
     // 執行不可變操作
@@ -64,7 +64,9 @@ pub fn handler(ctx: Context<ReleaseXxusd>) -> Result<()> {
         perform_immutable_operations(&ctx.accounts, current_time)?;
 
     // 執行可變操作
-    perform_mutable_operations(ctx, current_time, releasable_amount, current_total_locked_amount, current_locked_supply)?;
+    update_lock_manager(&mut ctx, current_time, releasable_amount, current_total_locked_amount)?;
+    perform_token_transfer(&mut ctx, releasable_amount)?;
+    update_controller(&mut ctx, current_locked_supply, releasable_amount)?;
 
     // 發出釋放事件
     emit!(ReleaseEvent {
@@ -88,12 +90,11 @@ fn perform_immutable_operations(accounts: &ReleaseXxusd, current_time: Timestamp
     Ok((releasable_amount, current_total_locked_amount, current_locked_supply))
 }
 
-fn perform_mutable_operations(
-    ctx: Context<ReleaseXxusd>,
+fn update_lock_manager(
+    ctx: &mut Context<ReleaseXxusd>,
     current_time: Timestamp,
     releasable_amount: Amount,
     current_total_locked_amount: Amount,
-    current_locked_supply: u128,
 ) -> Result<()> {
     let lock_manager = &mut ctx.accounts.lock_manager;
     let user_lock = lock_manager.locks.iter_mut()
@@ -104,7 +105,17 @@ fn perform_mutable_operations(
     user_lock.amount = checked_sub(user_lock.amount, releasable_amount)?;
     user_lock.lock_time = current_time;
 
-    // 轉移 xxUSD 從鎖定保管庫到用戶
+    // 更新鎖定管理器狀態
+    let new_total_locked_amount = checked_sub(current_total_locked_amount, releasable_amount)?;
+    lock_manager.set_total_locked_amount(new_total_locked_amount);
+
+    Ok(())
+}
+
+fn perform_token_transfer(
+    ctx: &mut Context<ReleaseXxusd>,
+    releasable_amount: Amount,
+) -> Result<()> {
     let seeds = &[
         LOCK_MANAGER_SEED.as_ref(),
         &[ctx.bumps.lock_manager],
@@ -115,11 +126,14 @@ fn perform_mutable_operations(
         releasable_amount.value()
     )?;
 
-    // 更新鎖定管理器狀態
-    let new_total_locked_amount = checked_sub(current_total_locked_amount, releasable_amount)?;
-    lock_manager.set_total_locked_amount(new_total_locked_amount);
+    Ok(())
+}
 
-    // 更新控制器狀態
+fn update_controller(
+    ctx: &mut Context<ReleaseXxusd>,
+    current_locked_supply: u128,
+    releasable_amount: Amount,
+) -> Result<()> {
     let controller = &mut ctx.accounts.controller;
     let new_locked_supply = checked_sub(Amount::from_u128(current_locked_supply)?, releasable_amount)?;
     controller.set_locked_xxusd_supply(new_locked_supply.to_u128())?;
