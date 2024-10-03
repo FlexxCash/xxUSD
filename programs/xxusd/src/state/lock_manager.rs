@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use crate::core::{Amount, Timestamp, u64_to_amount};
+use crate::state::{Amount, Timestamp};
+use crate::core::u64_to_amount;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct Lock {

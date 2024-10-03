@@ -2,8 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::error::XxusdError;
-use crate::state::{controller::Controller, hedging_strategy::HedgingStrategy};
-use crate::core::Amount;
+use crate::state::{controller::Controller, hedging_strategy::HedgingStrategy, Amount};
 use crate::utils::maths::{checked_add, checked_sub};
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";

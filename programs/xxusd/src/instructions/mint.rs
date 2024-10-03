@@ -3,9 +3,8 @@ use anchor_spl::token::{self, Token, TokenAccount, Mint, Transfer, MintTo};
 use anchor_spl::associated_token::AssociatedToken;
 
 use crate::error::XxusdError;
-use crate::state::{Controller, KaminoDepository};
+use crate::state::{Controller, KaminoDepository, Amount};
 use crate::{CONTROLLER_NAMESPACE, JUPSOL_MINT_PUBKEY};
-use crate::core::{Amount, u64_to_amount, safe_u128_to_u64};
 use crate::utils::maths::checked_add;
 
 pub const KAMINO_DEPOSITORY_SEED: &[u8] = b"kamino_depository";
@@ -117,9 +116,9 @@ pub fn handler(ctx: Context<MintInstruction>, collateral_amount: Amount) -> Resu
     controller.set_redeemable_circulating_supply(new_supply.to_u128())?;
 
     let kamino_depository = &mut ctx.accounts.kamino_depository;
-    let current_amount_under_management = u64_to_amount(kamino_depository.redeemable_amount_under_management.try_into().unwrap());
+    let current_amount_under_management = Amount::from_u128(kamino_depository.redeemable_amount_under_management)?;
     let new_amount_under_management = checked_add(current_amount_under_management, xxusd_amount)?;
-    kamino_depository.redeemable_amount_under_management = safe_u128_to_u64(new_amount_under_management.to_u128())?.into();
+    kamino_depository.redeemable_amount_under_management = new_amount_under_management.to_u128();
 
     // 7. 發出事件
     emit!(MintEvent {

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::state::controller::Controller;
-use crate::core::Amount;
+use crate::state::Amount;
 use crate::error::XxusdError;
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";

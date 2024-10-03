@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use crate::error::XxusdError;
 
 pub mod controller;
 pub mod kamino_depository;
@@ -27,6 +28,16 @@ impl Amount {
     /// 獲取 Amount 的值
     pub fn value(&self) -> u64 {
         self.0
+    }
+
+    /// 從 u128 創建 Amount
+    pub fn from_u128(value: u128) -> Result<Self> {
+        Ok(Amount(value.try_into().map_err(|_| XxusdError::Overflow)?))
+    }
+
+    /// 將 Amount 轉換為 u128
+    pub fn to_u128(&self) -> u128 {
+        self.0 as u128
     }
 }
 

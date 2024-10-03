@@ -7,8 +7,13 @@ use crate::error::XxusdError;
 pub const CONTROLLER_NAMESPACE: &[u8] = b"CONTROLLER";
 pub const DEFAULT_MAX_PRODUCTS: u64 = 100; // 設置一個默認值，您可以根據需要調整
 
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct InitializeControllerParams {
+    pub redeemable_mint_decimals: u8,
+}
+
 #[derive(Accounts)]
-#[instruction(redeemable_mint_decimals: u8)]
+#[instruction(params: InitializeControllerParams)]
 pub struct InitializeController<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -25,7 +30,7 @@ pub struct InitializeController<'info> {
     #[account(
         init,
         payer = authority,
-        mint::decimals = redeemable_mint_decimals,
+        mint::decimals = params.redeemable_mint_decimals,
         mint::authority = controller,
     )]
     pub redeemable_mint: Box<Account<'info, Mint>>,
@@ -39,9 +44,9 @@ pub struct InitializeController<'info> {
 
 pub fn handler(
     ctx: Context<InitializeController>,
-    redeemable_mint_decimals: u8,
+    params: InitializeControllerParams,
 ) -> Result<()> {
-    if redeemable_mint_decimals > 9 {
+    if params.redeemable_mint_decimals > 9 {
         return Err(XxusdError::InvalidRedeemableMintDecimals.into());
     }
 

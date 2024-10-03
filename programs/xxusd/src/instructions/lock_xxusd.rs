@@ -2,8 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::error::XxusdError;
-use crate::state::{controller::Controller, lock_manager::LockManager};
-use crate::core::{Amount, Timestamp, i64_to_timestamp};
+use crate::state::{controller::Controller, lock_manager::LockManager, Amount, Timestamp};
 use crate::utils::maths::checked_add;
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";
@@ -73,7 +72,7 @@ pub fn handler(ctx: Context<LockXxusd>, amount: Amount, lock_period: Timestamp) 
     lock_manager.set_total_locked_amount(new_total_locked_amount);
     lock_manager.locks.push(crate::state::lock_manager::Lock {
         amount,
-        lock_time: i64_to_timestamp(Clock::get()?.unix_timestamp),
+        lock_time: Timestamp::new(Clock::get()?.unix_timestamp),
         lock_period,
     });
 

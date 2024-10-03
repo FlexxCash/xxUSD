@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use crate::core::{Amount, safe_u128_to_u64, safe_u64_to_u128};
+use crate::state::Amount;
+use crate::core::{safe_u128_to_u64, safe_u64_to_u128};
 
 #[account]
 pub struct Controller {

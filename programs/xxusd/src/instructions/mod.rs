@@ -9,10 +9,10 @@ pub mod freeze_program;
 pub mod edit_controller;
 
 use anchor_lang::prelude::*;
-use crate::core::{Amount, Timestamp};
+use crate::state::{Amount, Timestamp};
 
 // 具體導入
-pub use initialize_controller::{InitializeController, handler as initialize_controller_handler};
+pub use initialize_controller::{InitializeController, InitializeControllerParams, handler as initialize_controller_handler};
 pub use mint::{MintInstruction, handler as mint_handler};
 pub use redeem::{Redeem, handler as redeem_handler};
 pub use lock_xxusd::{LockXxusd, handler as lock_xxusd_handler};
@@ -22,8 +22,8 @@ pub use manage_hedging_strategy::{ManageHedgingStrategy, handler as manage_hedgi
 pub use freeze_program::{FreezeProgram, handler as freeze_program_handler};
 pub use edit_controller::{EditController, handler as edit_controller_handler};
 
-pub fn initialize_controller(ctx: Context<InitializeController>, redeemable_mint_decimals: u8) -> Result<()> {
-    initialize_controller::handler(ctx, redeemable_mint_decimals)
+pub fn initialize_controller(ctx: Context<InitializeController>, params: InitializeControllerParams) -> Result<()> {
+    initialize_controller::handler(ctx, params)
 }
 
 pub fn mint(ctx: Context<MintInstruction>, collateral_amount: Amount) -> Result<()> {

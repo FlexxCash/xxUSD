@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
-use crate::core::{Amount, u64_to_amount};
+use crate::state::Amount;
+use crate::core::u64_to_amount;
 
 #[account]
 pub struct HedgingStrategy {

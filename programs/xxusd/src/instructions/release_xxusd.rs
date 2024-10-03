@@ -1,9 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::associated_token::AssociatedToken;
 
-use crate::error::XxusdError;
-use crate::state::{controller::Controller, lock_manager::LockManager};
-use crate::core::{Amount, Timestamp, i64_to_timestamp, timestamp_to_i64};
+use crate::state::{controller::Controller, lock_manager::LockManager, Amount, Timestamp};
 use crate::utils::maths::{checked_sub, checked_sub_timestamp};
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";
@@ -25,24 +24,27 @@ pub struct ReleaseXxusd<'info> {
         mut,
         seeds = [LOCK_MANAGER_SEED],
         bump,
+        has_one = controller,
     )]
     pub lock_manager: Box<Account<'info, LockManager>>,
 
     #[account(
         mut,
-        constraint = user_xxusd.owner == user.key() @XxusdError::InvalidOwner,
-        constraint = user_xxusd.mint == controller.xxusd_mint @XxusdError::InvalidMint,
+        associated_token::mint = controller.xxusd_mint,
+        associated_token::authority = user,
     )]
     pub user_xxusd: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
-        constraint = lock_vault.owner == lock_manager.key() @XxusdError::InvalidOwner,
-        constraint = lock_vault.mint == controller.xxusd_mint @XxusdError::InvalidMint,
+        associated_token::mint = controller.xxusd_mint,
+        associated_token::authority = lock_manager,
     )]
     pub lock_vault: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> ReleaseXxusd<'info> {
@@ -56,21 +58,21 @@ impl<'info> ReleaseXxusd<'info> {
     }
 }
 
-pub fn handler(mut ctx: Context<ReleaseXxusd>) -> Result<()> {
-    let current_time = i64_to_timestamp(Clock::get()?.unix_timestamp);
+pub fn handler(ctx: Context<ReleaseXxusd>) -> Result<()> {
+    let current_time = Timestamp::new(Clock::get()?.unix_timestamp);
 
     // 執行不可變操作
     let (releasable_amount, current_total_locked_amount, current_locked_supply) = 
         perform_immutable_operations(&ctx.accounts, current_time)?;
 
     // 執行可變操作
-    update_lock_manager(&mut ctx, current_time, releasable_amount, current_total_locked_amount)?;
-    perform_token_transfer(&mut ctx, releasable_amount)?;
-    update_controller(&mut ctx, current_locked_supply, releasable_amount)?;
+    update_lock_manager(&mut ctx.accounts.lock_manager, current_time, releasable_amount, current_total_locked_amount)?;
+    perform_token_transfer(&ctx, releasable_amount)?;
+    update_controller(&mut ctx.accounts.controller, current_locked_supply, releasable_amount)?;
 
     // 發出釋放事件
     emit!(ReleaseEvent {
-        user: *ctx.accounts.user.key,
+        user: ctx.accounts.user.key(),
         amount: releasable_amount,
     });
 
@@ -78,7 +80,7 @@ pub fn handler(mut ctx: Context<ReleaseXxusd>) -> Result<()> {
 }
 
 fn perform_immutable_operations(accounts: &ReleaseXxusd, current_time: Timestamp) -> Result<(Amount, Amount, u128)> {
-    let lock_period = timestamp_to_i64(accounts.lock_manager.locks[0].lock_period) as u64;
+    let lock_period = accounts.lock_manager.locks[0].lock_period.value() as u64;
     require!(lock_period > 0, XxusdError::InvalidLockPeriod);
 
     let current_total_locked_amount = accounts.lock_manager.get_total_locked_amount();
@@ -91,12 +93,11 @@ fn perform_immutable_operations(accounts: &ReleaseXxusd, current_time: Timestamp
 }
 
 fn update_lock_manager(
-    ctx: &mut Context<ReleaseXxusd>,
+    lock_manager: &mut LockManager,
     current_time: Timestamp,
     releasable_amount: Amount,
     current_total_locked_amount: Amount,
 ) -> Result<()> {
-    let lock_manager = &mut ctx.accounts.lock_manager;
     let user_lock = lock_manager.locks.iter_mut()
         .find(|lock| lock.amount.value() > 0)
         .ok_or(XxusdError::LockNotFound)?;
@@ -113,7 +114,7 @@ fn update_lock_manager(
 }
 
 fn perform_token_transfer(
-    ctx: &mut Context<ReleaseXxusd>,
+    ctx: &Context<ReleaseXxusd>,
     releasable_amount: Amount,
 ) -> Result<()> {
     let seeds = &[
@@ -130,11 +131,10 @@ fn perform_token_transfer(
 }
 
 fn update_controller(
-    ctx: &mut Context<ReleaseXxusd>,
+    controller: &mut Controller,
     current_locked_supply: u128,
     releasable_amount: Amount,
 ) -> Result<()> {
-    let controller = &mut ctx.accounts.controller;
     let new_locked_supply = checked_sub(Amount::from_u128(current_locked_supply)?, releasable_amount)?;
     controller.set_locked_xxusd_supply(new_locked_supply.to_u128())?;
 
@@ -147,8 +147,8 @@ fn calculate_releasable_amount(lock_manager: &LockManager, current_time: Timesta
         .ok_or(XxusdError::LockNotFound)?;
 
     let days_passed = checked_sub_timestamp(current_time, user_lock.lock_time)?;
-    let days_passed_u64 = timestamp_to_i64(Timestamp(days_passed)) as u64 / 86400; // 86400 seconds in a day
-    let lock_period = timestamp_to_i64(user_lock.lock_period) as u64;
+    let days_passed_u64 = (days_passed.abs() as u64) / 86400; // 86400 seconds in a day
+    let lock_period = user_lock.lock_period.value() as u64;
 
     let releasable_amount = Amount::from_u128(std::cmp::min(
         user_lock.amount.to_u128(),
@@ -164,4 +164,16 @@ fn calculate_releasable_amount(lock_manager: &LockManager, current_time: Timesta
 pub struct ReleaseEvent {
     pub user: Pubkey,
     pub amount: Amount,
+}
+
+#[error_code]
+pub enum XxusdError {
+    #[msg("Invalid lock period")]
+    InvalidLockPeriod,
+    #[msg("Lock not found")]
+    LockNotFound,
+    #[msg("Overflow occurred")]
+    Overflow,
+    #[msg("Insufficient releasable amount")]
+    InsufficientReleasableAmount,
 }
