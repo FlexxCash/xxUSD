@@ -1,28 +1,35 @@
-[workspace]
-members = ["programs/*"]
+[toolchain]
 
-[provider]
-cluster = "devnet"
-wallet = "~/.config/solana/new_id.json"
+[features]
+resolution = true
+skip-lint = false
 
 [programs.devnet]
-xxusd = "8ge5JzwZSYo8A3Qcrt2x9Zbug4umokMtZC6tMNBoFU9Z"
+xxusd = "5u1LpDc5x84w9tH5nJkckLkyh7RqUjXySVANY3K9puTh"
 
 [registry]
 url = "https://api.apr.dev"
 
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/new_id.json"
+
+[workspace]
+members = ["programs/*"]
+
 [scripts]
 test = "npx ts-mocha -p ./tsconfig.json -t 500000 tests/**/*.ts --reporter mochawesome --require mochawesome/register --reporter-options quiet=true,reportTitle=xxusd-test_integration --trace-warnings"
 
-[features]
-seeds = false
-skip-lint = false
-
 [test]
 startup_wait = 10000
+shutdown_wait = 2000
+upgradeable = false
 
 [test.validator]
+bind_address = "0.0.0.0"
 url = "https://api.devnet.solana.com"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
 
 [[test.validator.clone]]
 address = "7eS55f4LP5xj4jqRp24uv5aPFak4gzue8jwb5949KDzP"

@@ -11,15 +11,16 @@ pub mod edit_controller;
 use anchor_lang::prelude::*;
 use crate::core::{Amount, Timestamp};
 
-pub use initialize_controller::*;
-pub use mint::*;
-pub use redeem::*;
-pub use lock_xxusd::*;
-pub use release_xxusd::*;
-pub use manage_product_price::*;
-pub use manage_hedging_strategy::*;
-pub use freeze_program::*;
-pub use edit_controller::*;
+// 具體導入
+pub use initialize_controller::{InitializeController, handler as initialize_controller_handler};
+pub use mint::{MintInstruction, handler as mint_handler};
+pub use redeem::{Redeem, handler as redeem_handler};
+pub use lock_xxusd::{LockXxusd, handler as lock_xxusd_handler};
+pub use release_xxusd::{ReleaseXxusd, handler as release_xxusd_handler};
+pub use manage_product_price::{ManageProductPrice, handler as manage_product_price_handler};
+pub use manage_hedging_strategy::{ManageHedgingStrategy, handler as manage_hedging_strategy_handler};
+pub use freeze_program::{FreezeProgram, handler as freeze_program_handler};
+pub use edit_controller::{EditController, handler as edit_controller_handler};
 
 pub fn initialize_controller(ctx: Context<InitializeController>, redeemable_mint_decimals: u8) -> Result<()> {
     initialize_controller::handler(ctx, redeemable_mint_decimals)

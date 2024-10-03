@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::core::{Amount, u64_to_amount, safe_u128_to_u64, safe_u64_to_u128};
-use crate::error::XxusdError;
+use crate::core::{Amount, safe_u128_to_u64, safe_u64_to_u128};
 
 #[account]
 pub struct Controller {
@@ -14,6 +13,7 @@ pub struct Controller {
     pub is_frozen: bool,
     pub product_prices: Vec<(u64, Amount)>,
     pub locked_xxusd_supply: u64,
+    pub max_products: u64,
 }
 
 impl Controller {
@@ -25,6 +25,7 @@ impl Controller {
         authority: Pubkey,
         redeemable_mint: Pubkey,
         xxusd_mint: Pubkey,
+        max_products: u64,
     ) -> Result<()> {
         self.bump = bump;
         self.authority = authority;
@@ -36,6 +37,7 @@ impl Controller {
         self.is_frozen = false;
         self.product_prices = Vec::new();
         self.locked_xxusd_supply = 0;
+        self.max_products = max_products;
         Ok(())
     }
 

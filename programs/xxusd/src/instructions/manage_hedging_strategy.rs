@@ -6,6 +6,9 @@ use crate::state::{controller::Controller, hedging_strategy::HedgingStrategy};
 use crate::core::Amount;
 use crate::utils::maths::{checked_add, checked_sub};
 
+pub const CONTROLLER_SEED: &[u8] = b"controller";
+pub const HEDGING_STRATEGY_SEED: &[u8] = b"hedging_strategy";
+
 #[derive(Accounts)]
 pub struct ManageHedgingStrategy<'info> {
     #[account(mut)]
@@ -13,29 +16,42 @@ pub struct ManageHedgingStrategy<'info> {
 
     #[account(
         mut,
-        seeds = [b"controller"],
+        seeds = [CONTROLLER_SEED],
         bump,
         has_one = authority,
     )]
-    pub controller: Account<'info, Controller>,
+    pub controller: Box<Account<'info, Controller>>,
 
     #[account(
         mut,
-        seeds = [b"hedging_strategy"],
+        seeds = [HEDGING_STRATEGY_SEED],
         bump,
     )]
-    pub hedging_strategy: Account<'info, HedgingStrategy>,
+    pub hedging_strategy: Box<Account<'info, HedgingStrategy>>,
 
     #[account(mut)]
-    pub source_account: Account<'info, TokenAccount>,
+    pub source_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
-    pub destination_account: Account<'info, TokenAccount>,
+    pub destination_account: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
 }
 
+impl<'info> ManageHedgingStrategy<'info> {
+    fn transfer_context(&self, from: &AccountInfo<'info>, to: &AccountInfo<'info>, authority: &AccountInfo<'info>) -> CpiContext<'_, '_, '_, 'info, Transfer<'info>> {
+        let cpi_accounts = Transfer {
+            from: from.clone(),
+            to: to.clone(),
+            authority: authority.clone(),
+        };
+        CpiContext::new(self.token_program.to_account_info(), cpi_accounts)
+    }
+}
+
 pub fn handler(ctx: Context<ManageHedgingStrategy>, amount: Amount, is_deposit: bool) -> Result<()> {
+    require!(amount.value() > 0, XxusdError::InvalidAmount);
+
     if is_deposit {
         deposit_to_lending_platform(ctx, amount)
     } else {
@@ -43,56 +59,73 @@ pub fn handler(ctx: Context<ManageHedgingStrategy>, amount: Amount, is_deposit: 
     }
 }
 
-pub fn deposit_to_lending_platform(ctx: Context<ManageHedgingStrategy>, amount: Amount) -> Result<()> {
-    let hedging_strategy = &mut ctx.accounts.hedging_strategy;
+fn deposit_to_lending_platform(ctx: Context<ManageHedgingStrategy>, amount: Amount) -> Result<()> {
+    // Check if source account has enough balance
+    require!(
+        ctx.accounts.source_account.amount >= amount.value(),
+        XxusdError::InsufficientFunds
+    );
+
+    // Get the current deposited amount
+    let current_deposited_amount = ctx.accounts.hedging_strategy.get_deposited_amount();
 
     // Transfer tokens to lending platform
-    let cpi_accounts = Transfer {
-        from: ctx.accounts.source_account.to_account_info(),
-        to: ctx.accounts.destination_account.to_account_info(),
-        authority: ctx.accounts.authority.to_account_info(),
-    };
-    let cpi_program = ctx.accounts.token_program.to_account_info();
-    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-    token::transfer(cpi_ctx, amount.value())?;
+    token::transfer(
+        ctx.accounts.transfer_context(
+            &ctx.accounts.source_account.to_account_info(),
+            &ctx.accounts.destination_account.to_account_info(),
+            &ctx.accounts.authority.to_account_info()
+        ),
+        amount.value()
+    )?;
 
     // Update hedging strategy state
-    let new_deposited_amount = checked_add(
-        hedging_strategy.get_deposited_amount(),
-        amount
-    )?;
-    hedging_strategy.set_deposited_amount(new_deposited_amount);
+    let new_deposited_amount = checked_add(current_deposited_amount, amount)?;
+    ctx.accounts.hedging_strategy.set_deposited_amount(new_deposited_amount);
+
+    // Emit deposit event
+    emit!(DepositEvent {
+        amount,
+        new_total_deposited: new_deposited_amount,
+    });
 
     Ok(())
 }
 
-pub fn withdraw_from_lending_platform(ctx: Context<ManageHedgingStrategy>, amount: Amount) -> Result<()> {
-    let hedging_strategy = &mut ctx.accounts.hedging_strategy;
+fn withdraw_from_lending_platform(ctx: Context<ManageHedgingStrategy>, amount: Amount) -> Result<()> {
+    // Get the current deposited amount
+    let current_deposited_amount = ctx.accounts.hedging_strategy.get_deposited_amount();
 
     // Ensure we have enough deposited to withdraw
-    require!(hedging_strategy.get_deposited_amount().value() >= amount.value(), XxusdError::InsufficientFunds);
+    require!(
+        current_deposited_amount.value() >= amount.value(),
+        XxusdError::InsufficientFunds
+    );
 
     // Transfer tokens from lending platform
-    let cpi_accounts = Transfer {
-        from: ctx.accounts.source_account.to_account_info(),
-        to: ctx.accounts.destination_account.to_account_info(),
-        authority: ctx.accounts.authority.to_account_info(),
-    };
-    let cpi_program = ctx.accounts.token_program.to_account_info();
-    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-    token::transfer(cpi_ctx, amount.value())?;
+    token::transfer(
+        ctx.accounts.transfer_context(
+            &ctx.accounts.source_account.to_account_info(),
+            &ctx.accounts.destination_account.to_account_info(),
+            &ctx.accounts.authority.to_account_info()
+        ),
+        amount.value()
+    )?;
 
     // Update hedging strategy state
-    let new_deposited_amount = checked_sub(
-        hedging_strategy.get_deposited_amount(),
-        amount
-    )?;
-    hedging_strategy.set_deposited_amount(new_deposited_amount);
+    let new_deposited_amount = checked_sub(current_deposited_amount, amount)?;
+    ctx.accounts.hedging_strategy.set_deposited_amount(new_deposited_amount);
+
+    // Emit withdraw event
+    emit!(WithdrawEvent {
+        amount,
+        new_total_deposited: new_deposited_amount,
+    });
 
     Ok(())
 }
 
-pub fn swap_assets(ctx: Context<ManageHedgingStrategy>, amount_in: Amount, min_amount_out: Amount) -> Result<()> {
+pub fn swap_assets(_ctx: Context<ManageHedgingStrategy>, amount_in: Amount, min_amount_out: Amount) -> Result<()> {
     // Here you would implement the logic to swap assets
     // This might involve calling an external DEX or AMM
 
@@ -103,6 +136,18 @@ pub fn swap_assets(ctx: Context<ManageHedgingStrategy>, amount_in: Amount, min_a
     });
 
     Ok(())
+}
+
+#[event]
+pub struct DepositEvent {
+    pub amount: Amount,
+    pub new_total_deposited: Amount,
+}
+
+#[event]
+pub struct WithdrawEvent {
+    pub amount: Amount,
+    pub new_total_deposited: Amount,
 }
 
 #[event]

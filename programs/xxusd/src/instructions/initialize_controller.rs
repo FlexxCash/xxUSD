@@ -3,8 +3,9 @@ use anchor_spl::token::Mint;
 
 use crate::state::Controller;
 use crate::error::XxusdError;
-use crate::CONTROLLER_NAMESPACE;
-use crate::core::Amount;
+
+pub const CONTROLLER_NAMESPACE: &[u8] = b"CONTROLLER";
+pub const DEFAULT_MAX_PRODUCTS: u64 = 100; // 設置一個默認值，您可以根據需要調整
 
 #[derive(Accounts)]
 #[instruction(redeemable_mint_decimals: u8)]
@@ -50,6 +51,7 @@ pub fn handler(
         ctx.accounts.authority.key(),
         ctx.accounts.redeemable_mint.key(),
         ctx.accounts.xxusd_mint.key(),
+        DEFAULT_MAX_PRODUCTS,
     )?;
 
     // Note: The following default values are set during initialization:
@@ -59,6 +61,7 @@ pub fn handler(
     // - is_frozen: false
     // - product_prices: empty Vec
     // - locked_xxusd_supply: Amount::new(0)
+    // - max_products: DEFAULT_MAX_PRODUCTS
 
     Ok(())
 }

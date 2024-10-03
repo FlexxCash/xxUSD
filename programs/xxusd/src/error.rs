@@ -64,4 +64,22 @@ pub enum XxusdError {
 
     #[msg("Lock not found")]
     LockNotFound,
+
+    #[msg("Insufficient collateral")]
+    InsufficientCollateral,
+
+    #[msg("Invalid product ID")]
+    InvalidProductId,
+
+    #[msg("Maximum number of products reached")]
+    MaxProductsReached,
+
+    #[msg("Invalid amount")]
+    InvalidAmount,
+
+    #[msg("Insufficient releasable amount")]
+    InsufficientReleasableAmount,
+
+    #[msg("Insufficient Balance")]
+    InsufficientBalance,
 }
