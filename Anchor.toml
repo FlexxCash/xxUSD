@@ -1,0 +1,31 @@
+[workspace]
+members = ["programs/*"]
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/new_id.json"
+
+[programs.devnet]
+xxusd = "8ge5JzwZSYo8A3Qcrt2x9Zbug4umokMtZC6tMNBoFU9Z"
+
+[registry]
+url = "https://api.apr.dev"
+
+[scripts]
+test = "npx ts-mocha -p ./tsconfig.json -t 500000 tests/**/*.ts --reporter mochawesome --require mochawesome/register --reporter-options quiet=true,reportTitle=xxusd-test_integration --trace-warnings"
+
+[features]
+seeds = false
+skip-lint = false
+
+[test]
+startup_wait = 10000
+
+[test.validator]
+url = "https://api.devnet.solana.com"
+
+[[test.validator.clone]]
+address = "7eS55f4LP5xj4jqRp24uv5aPFak4gzue8jwb5949KDzP"
+
+[[test.validator.clone]]
+address = "EneKhgmdLQgfLtqC9aE52B1bMcFtjob6qMkDc5Q3mHx7"
