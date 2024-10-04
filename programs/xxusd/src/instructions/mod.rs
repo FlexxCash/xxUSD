@@ -1,8 +1,8 @@
 pub mod initialize_controller;
-pub mod mint;
-pub mod redeem;
 pub mod lock_xxusd;
 pub mod release_xxusd;
+pub mod mint;
+pub mod redeem;
 pub mod manage_product_price;
 pub mod manage_hedging_strategy;
 pub mod freeze_program;

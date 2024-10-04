@@ -45,7 +45,7 @@ pub struct InitializeController<'info> {
 pub fn handler(
     ctx: Context<InitializeController>,
     params: InitializeControllerParams,
-) -> Result<()> {
+) -> Result<()> { // 使用 type alias Result<T>
     if params.redeemable_mint_decimals > 9 {
         return Err(XxusdError::InvalidRedeemableMintDecimals.into());
     }

@@ -2628,8 +2628,11 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "borsh 0.10.4",
+ "bs58 0.4.0",
  "bytemuck",
  "solana-program",
+ "syn 1.0.109",
 ]
 
 [[package]]

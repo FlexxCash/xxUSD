@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::state::Amount;
-use crate::core::u64_to_amount;
+use crate::state::u64_to_amount;
+use core::mem; // 添加這行
 
 #[account]
 pub struct HedgingStrategy {
@@ -11,7 +12,7 @@ pub struct HedgingStrategy {
 }
 
 impl HedgingStrategy {
-    pub const LEN: usize = 8 + std::mem::size_of::<HedgingStrategy>();
+    pub const LEN: usize = 8 + mem::size_of::<HedgingStrategy>();
 
     pub fn initialize(&mut self, bump: u8, controller: Pubkey) -> Result<()> {
         self.bump = bump;

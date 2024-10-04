@@ -78,7 +78,7 @@ pub fn calculate_depositories_target_redeemable_amount(
         .collect::<Result<Vec<u64>>>()?;
 
     // Compute the depository_overflow amount of raw target that doesn't fit within the cap of each depository
-    let depositories_overflow_amount = std::iter::zip(
+    let depositories_overflow_amount = common_core::iter::zip(
         depositories_raw_target_redeemable_amount.iter(),
         depositories_hard_cap_amount.iter(),
     )
@@ -95,7 +95,7 @@ pub fn calculate_depositories_target_redeemable_amount(
     .collect::<Result<Vec<u64>>>()?;
 
     // Compute the amount of space available under the cap in each depository
-    let depositories_available_amount = std::iter::zip(
+    let depositories_available_amount = common_core::iter::zip(
         depositories_raw_target_redeemable_amount.iter(),
         depositories_hard_cap_amount.iter(),
     )
@@ -134,11 +134,11 @@ pub fn calculate_depositories_target_redeemable_amount(
     // ---------------------------------------------------------------------
 
     // Compute the final targets for each depository
-    let depositories_target_redeemable_amount = std::iter::zip(
+    let depositories_target_redeemable_amount = common_core::iter::zip(
         depositories_raw_target_redeemable_amount.iter(),
-        std::iter::zip(
+        common_core::iter::zip(
             depositories_overflow_amount.iter(),
-            std::iter::zip(
+            common_core::iter::zip(
                 depositories_available_amount.iter(),
                 depositories_info.iter(),
             ),
@@ -155,7 +155,7 @@ pub fn calculate_depositories_target_redeemable_amount(
                     // We try to rellocate up to the maximum available total amount.
                     // If the overflow amount is more than the available amount, there is nothing we can do
                     let total_amount_reallocatable =
-                        std::cmp::min(total_overflow_amount, total_available_amount);
+                    common_core::cmp::min(total_overflow_amount, total_available_amount);
                     compute_amount_fraction_ceil(
                         total_amount_reallocatable,
                         *depository_available_amount,

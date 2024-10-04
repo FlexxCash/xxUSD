@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::state::Amount;
-use crate::core::{safe_u128_to_u64, safe_u64_to_u128};
+use crate::state::{safe_u128_to_u64, safe_u64_to_u128};
+use core::mem;
 
 #[account]
 pub struct Controller {
@@ -18,8 +19,8 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub const LEN: usize = 8 + std::mem::size_of::<Controller>();
-    
+    pub const LEN: usize = 8 + mem::size_of::<Controller>();
+
     pub fn initialize(
         &mut self,
         bump: u8,

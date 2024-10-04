@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-xxusd = "5u1LpDc5x84w9tH5nJkckLkyh7RqUjXySVANY3K9puTh"
+xxusd = "Cpsquy1RbEb4N3FXDKBzrWMKTLLvBp1BBSvp899EHhCb"
 
 [registry]
 url = "https://api.apr.dev"

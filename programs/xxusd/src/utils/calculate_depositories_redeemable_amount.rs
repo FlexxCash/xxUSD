@@ -96,7 +96,7 @@ pub fn calculate_depositories_redeemable_amount(
             .checked_sub(depositories_redeemable_amount[i])
             .ok_or(XxusdError::MathOverflow)?;
         let depository_rounding_correction =
-            std::cmp::min(depository_remaining_after_redeem, rounding_errors);
+        common_utils::cmp::min(depository_remaining_after_redeem, rounding_errors);
         depositories_redeemable_amount[i] = depositories_redeemable_amount[i]
             .checked_add(depository_rounding_correction)
             .ok_or(XxusdError::MathOverflow)?;

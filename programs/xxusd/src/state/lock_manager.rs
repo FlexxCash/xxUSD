@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::state::{Amount, Timestamp};
-use crate::core::u64_to_amount;
+use crate::state::u64_to_amount;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug)]
 pub struct Lock {
@@ -20,7 +20,7 @@ pub struct LockManager {
 impl LockManager {
     pub const LEN: usize = 8 + 1 + 32 + 8 + 4 + (32 * 10); // 假設最多存儲10個鎖定記錄
 
-    pub fn initialize(&mut self, bump: u8, controller: Pubkey) -> Result<()> {
+    pub fn initialize(&mut self, bump: u8, controller: Pubkey) -> anchor_lang::Result<()> {
         self.bump = bump;
         self.controller = controller;
         self.total_locked_amount = 0;

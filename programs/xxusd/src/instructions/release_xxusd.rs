@@ -4,6 +4,8 @@ use anchor_spl::associated_token::AssociatedToken;
 
 use crate::state::{controller::Controller, lock_manager::LockManager, Amount, Timestamp};
 use crate::utils::maths::{checked_sub, checked_sub_timestamp};
+use crate::error::XxusdError;
+use core::cmp; // 確保已導入
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";
 pub const LOCK_MANAGER_SEED: &[u8] = b"lock_manager";
@@ -59,10 +61,10 @@ impl<'info> ReleaseXxusd<'info> {
 }
 
 pub fn handler(ctx: Context<ReleaseXxusd>) -> Result<()> {
-    let current_time = Timestamp::new(Clock::get()?.unix_timestamp);
+    let current_time = Timestamp::new(Clock::get()?.unix_timestamp); // 移除了 ? 運算符
 
     // 執行不可變操作
-    let (releasable_amount, current_total_locked_amount, current_locked_supply) = 
+    let (releasable_amount, current_total_locked_amount, current_locked_supply) =
         perform_immutable_operations(&ctx.accounts, current_time)?;
 
     // 執行可變操作
@@ -108,7 +110,7 @@ fn update_lock_manager(
 
     // 更新鎖定管理器狀態
     let new_total_locked_amount = checked_sub(current_total_locked_amount, releasable_amount)?;
-    lock_manager.set_total_locked_amount(new_total_locked_amount);
+    lock_manager.set_total_locked_amount(new_total_locked_amount); // 移除了 ? 運算符
 
     Ok(())
 }
@@ -147,10 +149,10 @@ fn calculate_releasable_amount(lock_manager: &LockManager, current_time: Timesta
         .ok_or(XxusdError::LockNotFound)?;
 
     let days_passed = checked_sub_timestamp(current_time, user_lock.lock_time)?;
-    let days_passed_u64 = (days_passed.abs() as u64) / 86400; // 86400 seconds in a day
+    let days_passed_u64 = (days_passed.abs() as u64) / 86400; // 86400 秒為一天
     let lock_period = user_lock.lock_period.value() as u64;
 
-    let releasable_amount = Amount::from_u128(std::cmp::min(
+    let releasable_amount = Amount::from_u128(cmp::min(
         user_lock.amount.to_u128(),
         days_passed_u64 as u128 * user_lock.amount.to_u128() / lock_period as u128
     )).map_err(|_| XxusdError::Overflow)?;
@@ -164,16 +166,4 @@ fn calculate_releasable_amount(lock_manager: &LockManager, current_time: Timesta
 pub struct ReleaseEvent {
     pub user: Pubkey,
     pub amount: Amount,
-}
-
-#[error_code]
-pub enum XxusdError {
-    #[msg("Invalid lock period")]
-    InvalidLockPeriod,
-    #[msg("Lock not found")]
-    LockNotFound,
-    #[msg("Overflow occurred")]
-    Overflow,
-    #[msg("Insufficient releasable amount")]
-    InsufficientReleasableAmount,
 }

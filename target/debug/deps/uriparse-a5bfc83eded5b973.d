@@ -1,0 +1,14 @@
+/home/dc/flexx_bnpl/xxUSD/target/debug/deps/liburiparse-a5bfc83eded5b973.rmeta: /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/lib.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/utility.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/authority.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/fragment.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/path.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/query.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/relative_reference.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/scheme.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/uri.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/uri_reference.rs
+
+/home/dc/flexx_bnpl/xxUSD/target/debug/deps/uriparse-a5bfc83eded5b973.d: /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/lib.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/utility.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/authority.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/fragment.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/path.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/query.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/relative_reference.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/scheme.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/uri.rs /home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/uri_reference.rs
+
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/lib.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/utility.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/authority.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/fragment.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/path.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/query.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/relative_reference.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/scheme.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/uri.rs:
+/home/dc/.cargo/registry/src/index.crates.io-6f17d22bba15001f/uriparse-0.6.4/src/uri_reference.rs:
